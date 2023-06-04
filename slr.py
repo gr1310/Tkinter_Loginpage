@@ -1,23 +1,36 @@
 from tkinter import *
 import tkinter.font as font
 from PIL import Image, ImageTk
-import os
+import sqlite3
+from tkinter import messagebox
 
 def register_user():
+    name_info=name.get()
+    age_info=age.get()
+    conn_type_of_devices_info=conn_type_of_devices.get()
+    conn_type_of_devices_info_1=conn_type_of_devices_1.get()
+    gender_info=gender.get()
     username_info=username.get()
     password_info= password.get()
 
-    file=open(username_info,"w")
-    file.write(username_info+'\n')
-    file.write(password_info)
-    file.close()
+    conn= sqlite3.connect("software.db")
+    c=conn.cursor()
+    c.execute("INSERT INTO person VALUES('"+name_info+"',"+age_info+",'"+conn_type_of_devices_info+"','"+conn_type_of_devices_info_1+"','"+gender_info+"','"+username_info+"','"+password_info+"')")
+    messagebox.showinfo("Information","Your record is saved!")
+    conn.commit()
+    conn.close()
 
+    name_entry.delete(0,END)
+    age_entry.delete(0,END)
+    conn_devices_entry.deselect()
+    conn_devices_entry1.deselect()
+    gen_entry_m.deselect()
+    gen_entry_f.select()
     username_entry.delete(0,END)
     password_entry.delete(0,END)
 
     Label(screen1,text="Registeration is Successful", fg="green", font=("Calibri",11)).pack()
-    # Label(text="").pack()
-    # Button(text="Back to login page", height=1, width= 10, bg="#0077b6",font=("Times",13), command=delete_s1).pack()
+
 
 def delete_s1():
     screen1.destroy()
@@ -26,25 +39,86 @@ def register():
     global screen1
     screen1= Toplevel(screen)
     screen1.title("register")
-    screen1.geometry("400x350")
+    screen1.geometry("400x650")
     screen1.configure(bg="#FFFEF2")
 
+    global name
+    global age
+    global conn_type_of_devices
+    global conn_type_of_devices_1
+    global gender
     global username
     global password
+
+    global name_entry
+    global age_entry
+    global conn_devices_entry
+    global conn_devices_entry1
+    global gen_entry_m
+    global gen_entry_f
     global username_entry
     global password_entry
+
+    name=StringVar()
+    age=StringVar()
+    conn_type_of_devices=StringVar()
+    conn_type_of_devices_1=StringVar()
+    gender=StringVar()
     username= StringVar()
     password= StringVar()
+
     Label(screen1, text="Please Enter details below ",width="400",height="3",bg="#caf0f8", font=("Times",16)).pack()
+
+    Label(screen1, text="",bg="#FFFEF2").pack()
+
+    Label(screen1, text="Enter Name",font=("Times",13),bg="#FFFEF2").pack()
+
+    name_entry= Entry(screen1,textvariable=name, width=30)
+    name_entry.pack()
+
+    Label(screen1, text="Enter Age",font=("Times",13),bg="#FFFEF2").pack()
+
+    age_entry= Entry(screen1,textvariable=age, width=30)
+    age_entry.pack()
+
+    Label(screen1, text="Select types of connection",font=("Times",13),bg="#FFFEF2").pack()
+
+    conn_devices_entry= Checkbutton(screen1, text="Wifi",variable=conn_type_of_devices,bg="#FFFEF2")
+    conn_devices_entry.deselect()
+    conn_devices_entry.pack()
+
+    conn_devices_entry1= Checkbutton(screen1, text="Bluetooth",variable=conn_type_of_devices_1,bg="#FFFEF2")
+    conn_devices_entry1.deselect()
+    conn_devices_entry1.pack()
+
+    Label(screen1, text="Select gender",font=("Times",13),bg="#FFFEF2").pack()
+
+    gen_entry_m= Radiobutton(screen1, text="Male",variable=gender, value="Male",bg="#FFFEF2")
+    gen_entry_m.deselect()
+    gen_entry_m.pack()
+
+    gen_entry_f= Radiobutton(screen1, text="Female",variable=gender, value="Female",bg="#FFFEF2")
+    gen_entry_f.select()
+    gen_entry_f.pack()
+
     Label(screen1, text="",bg="#FFFEF2").pack()
     Label(screen1, text="Enter Username",font=("Times",13),bg="#FFFEF2").pack()
+
     username_entry= Entry(screen1,textvariable=username, width=30)
     username_entry.pack()
+
     Label(screen1,text="Enter Password",font=("Times",13),bg="#FFFEF2").pack()
+
     password_entry= Entry(screen1,textvariable=password,width=30)
     password_entry.pack()
+
+
     Label(screen1,text="",bg="#FFFEF2").pack()
     Button(screen1, text="Register",bg="#d1ffea",height=2, width= 20, command= register_user).pack()
+
+    Label(screen1,text="",bg="#FFFEF2").pack()
+    Button(screen1, text="Direct to Login Page",bg="#d1ffea",height=2, width= 20, command= login).pack()
+
     Label(screen1,text="",bg="#FFFEF2").pack()
     Button(screen1,text="Close window",bg="#ffcccb",height=2, width= 20, command=delete_s1).pack()
 
@@ -108,19 +182,42 @@ def login_verify():
     usernamee_entry1.delete(0,END)
     password_entry1.delete(0,END)
 
-    list_of_files= os.listdir()
-    if username1 in list_of_files:
-        file1=open(username1,"r")
-        verify=file1.read().splitlines()
-        if password1 in verify:
-            login_success()
-            # print("login success")
+
+    conn= sqlite3.connect("software.db")
+    c=conn.cursor()
+    c.execute("SELECT username,password FROM person")
+    r=c.fetchall()
+    
+    user_list=[]
+    pass_list=[]
+    for i in r:
+        user_list.append(i[0])
+        pass_list.append(i[1])
+
+    for i in range(len(user_list)):
+        # print(user_list[i], pass_list[i])
+        if(username1 in user_list):
+            if(password1 in pass_list):
+                if(user_list.index(username1)==pass_list.index(password1)):
+                    # print("YES")
+                    login_success()
+                    break
+                else:
+                    # print("Incorrect Password")
+                    messagebox.askretrycancel("Try Again","Password Incorrect")
+                    break
+            else:
+                # print("incorrect password")
+                messagebox.askretrycancel("Try Again","Password Incorrect")
+                break
         else:
-            password_not_recognized()
-            # print("password has not been recognized")
-    else:
-        user_not_found()
-        # print("user not found")
+            # print("User Not Found")
+            user_not_found()
+            break
+
+    conn.commit()
+    conn.close()
+
 
 def delete_s2():
     screen2.destroy()
@@ -162,6 +259,13 @@ def main_screen():
     global screen
     screen=Tk()
     screen.geometry("400x400")
+
+    # conn= sqlite3.connect("software.db")
+    # c=conn.cursor()
+    # c.execute("CREATE TABLE person(name TEXT, age INT, conn_type TEXT, conn_type_other TEXT, gender TEXT, username TEXT, password TEXT)")
+    # conn.commit()
+    # conn.close()
+
     screen.title("Sign up/ Login page")
     screen.configure(bg="#caf0f8")
     Label(text="Sign up/ Log in",width="400",height="3", fg="#caf0f8",bg="#04035e", font=("Times",16,"bold")).pack()
