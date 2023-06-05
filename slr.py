@@ -3,7 +3,21 @@ import tkinter.font as font
 from PIL import Image, ImageTk
 import sqlite3
 from tkinter import messagebox
+import sys
+import os
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS2
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
+#Registration
 def register_user():
     name_info=name.get()
     age_info=age.get()
@@ -13,7 +27,7 @@ def register_user():
     username_info=username.get()
     password_info= password.get()
 
-    conn= sqlite3.connect("software.db")
+    conn= sqlite3.connect(resource_path("software.db"))
     c=conn.cursor()
     c.execute("INSERT INTO person VALUES('"+name_info+"',"+age_info+",'"+conn_type_of_devices_info+"','"+conn_type_of_devices_info_1+"','"+gender_info+"','"+username_info+"','"+password_info+"')")
     messagebox.showinfo("Information","Your record is saved!")
@@ -38,7 +52,7 @@ def delete_s1():
 def register():
     global screen1
     screen1= Toplevel(screen)
-    screen1.title("register")
+    screen1.title("Register")
     screen1.geometry("400x650")
     screen1.configure(bg="#FFFEF2")
 
@@ -123,22 +137,85 @@ def register():
     Button(screen1,text="Close window",bg="#ffcccb",height=2, width= 20, command=delete_s1).pack()
 
 
+#Login
 def delete_s4():
     screen4.destroy()
 def delete_s5():
     screen5.destroy()
 def delete_s8():
     screen8.destroy()
+def delete_s9():
+    screen9.destroy()
+
+def button_clicked1():
+    print("success") 
+    Label(screen9,text="hi").pack()
+
+#     #print("Scanning") 
+#     Label(screen9,text="Scanning",width="400",height="3", font=("Times",13,"bold")).pack()
+ 
+#     nearby_devices = bluetooth.discover_devices(lookup_names=True)
+    
+#     #print("Found {} devices.".format(len(nearby_devices)))
+#     Label(screen9,text="Found {} devices.".format(len(nearby_devices)),width="400",height="3", font=("Times",11,"bold")).pack()
+
+#     for addr, name in nearby_devices:
+#         #print("  {} - {}".format(addr, name))
+#         Label(screen9,text="  {} - {}".format(addr, name),width="400",height="3", font=("Times",12,"bold")).pack()
+
+
+def scan_devices():
+    global screen9
+    screen9=Toplevel(screen)
+    screen9.title("Scan for nearby Bluetooth devices")
+    screen9.geometry("400x500")
+    Label(screen9,text="Nearby Bluetooth devices",font=("Times",16)).pack()
+    Label(screen9,text="").pack()
+    Button(screen9,text="Scan Devices", height=1, width= 30, bg="#0077b6",font=("Times",13,"bold"), command=button_clicked1).pack()
+  
+    Label(screen9,text="").pack()
+    Button(screen9,text="Exit", height=1, width= 30, bg="#CD5C5C",font=("Times",13,"bold"),command=delete_s9).pack(side=BOTTOM)
+
+
+
+#dashboard
 
 def session():
     # delete_s()
     delete_s2()
     global screen8
     screen8= Toplevel(screen)
+
     screen8.title("Dashboard")
     screen8.geometry("400x400")
-    Label(screen8, text="Welcome to the Dashboard").pack()
-    Button(screen8,text="Sign out",command=delete_s8).pack()
+    Label(screen8, text="Welcome to the Dashboard",font=("Times",16)).pack()
+
+    Button(screen8,text="Sign out",bg="#ffcccb",command=delete_s8).place(x=340,y=10)
+
+    conn= sqlite3.connect("software.db")
+    c1=conn.cursor()
+    c1.execute("SELECT name,gender FROM person WHERE username='"+username1+"'")
+    r1=c1.fetchall()
+    
+    for i in r1:
+        print(i[0])
+        print(i[1])
+        if(i[1]=="Female"):
+            Label(screen8,text="Hello! Ms. {}".format(i[0]),font=("Times",14)).pack()
+            # print("Ms. {}".format(i[0]))
+        else:
+            Label(screen8,text="Hello! Mr. {}".format(i[0]),font=("Times",14)).pack()
+            # print("Mr. {}".format(i[0]))
+
+    conn.commit()
+    conn.close()
+
+    Label(screen8,text="").pack()
+    Button(screen8,text="Your Saved Devices",width=20,height=2,bg="#d1ffea").pack()
+    
+    Label(screen8,text="").pack()
+    Button(screen8,text="Scan Nearby Devices",width=20,height=2,bg="#d1ffea",command=scan_devices).pack()
+
 
 
 def login_success():
@@ -177,13 +254,16 @@ def user_not_found():
 
 def login_verify():
     # print("working...")
+    global username1
+    global password1
     username1=username_verify.get()
     password1=password_verify.get()
     usernamee_entry1.delete(0,END)
     password_entry1.delete(0,END)
 
 
-    conn= sqlite3.connect("software.db")
+
+    conn= sqlite3.connect(resource_path("software.db"))
     c=conn.cursor()
     c.execute("SELECT username,password FROM person")
     r=c.fetchall()
@@ -226,6 +306,7 @@ def login():
     print("Login session started")
     global screen2
     screen2=Toplevel(screen)
+    # screen2=Tk()
     screen2.title("Login page")
     screen2.geometry("400x350")
     screen2.configure(bg="#E5F6DF")
@@ -250,15 +331,14 @@ def login():
     Button(screen2,text="Close window",bg="#ffcccb",height=2, width= 20, command=delete_s2).pack()
 
 
-# def_font=font.Font(family='Times')
-def delete_s():
-    screen.destroy()
-#main screen
+
 def main_screen():
     
     global screen
     screen=Tk()
     screen.geometry("400x400")
+    screen.minsize(400,400)
+    screen.maxsize(400,400)
 
     # conn= sqlite3.connect("software.db")
     # c=conn.cursor()
@@ -269,7 +349,7 @@ def main_screen():
     screen.title("Sign up/ Login page")
     screen.configure(bg="#caf0f8")
     Label(text="Sign up/ Log in",width="400",height="3", fg="#caf0f8",bg="#04035e", font=("Times",16,"bold")).pack()
-    photo = PhotoImage(file="image.png", width="400", height="150")
+    photo = PhotoImage(file=resource_path("image.png"), width="400", height="150")
     new=Label(image=photo)
     new.pack()
     Label(text="",bg="#caf0f8").pack()
@@ -277,7 +357,7 @@ def main_screen():
     Label(text="",bg="#caf0f8").pack()
     Button(text="Register", height=1, width= 30,bg="#0077b6",font=("Times",13,"bold"), command=register).pack()
     Label(text="",bg="#caf0f8").pack()
-    Button(text="Quit", height=1, width= 30,bg="#0077b6",font=("Times",13,"bold"), command=delete_s).pack()
+    Button(text="Quit", height=1, width= 30,bg="#0077b6",font=("Times",13,"bold"), command=lambda: screen.quit()).pack()
     screen.mainloop()
 
 main_screen()
