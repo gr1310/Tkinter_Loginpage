@@ -3,6 +3,7 @@ import tkinter.font as font
 from PIL import Image, ImageTk
 import sqlite3
 from tkinter import messagebox
+import bluetooth
 import sys
 import os
 
@@ -147,21 +148,22 @@ def delete_s8():
 def delete_s9():
     screen9.destroy()
 
-def button_clicked1():
-    print("success") 
-    Label(screen9,text="hi").pack()
-
-#     #print("Scanning") 
-#     Label(screen9,text="Scanning",width="400",height="3", font=("Times",13,"bold")).pack()
+#def button_clicked1():
+    #print("success") 
+#    screen9.pack_forget()
+  #  Label(screen9,text="hi").pack()
+     #print("Scanning") 
+ #   scan=Label(screen9,text="Scanning",width="400",height="3", font=("Times",13,"bold"))
+ #   scan.pack()
  
-#     nearby_devices = bluetooth.discover_devices(lookup_names=True)
+#    nearby_devices = bluetooth.discover_devices(lookup_names=True)
     
-#     #print("Found {} devices.".format(len(nearby_devices)))
-#     Label(screen9,text="Found {} devices.".format(len(nearby_devices)),width="400",height="3", font=("Times",11,"bold")).pack()
+     #print("Found {} devices.".format(len(nearby_devices)))
+#    Label(screen9,text="Found {} devices.".format(len(nearby_devices)),width="400",height="3", font=("Times",11,"bold")).pack()
 
-#     for addr, name in nearby_devices:
+#    for addr, name in nearby_devices:
 #         #print("  {} - {}".format(addr, name))
-#         Label(screen9,text="  {} - {}".format(addr, name),width="400",height="3", font=("Times",12,"bold")).pack()
+#        Label(screen9,text="  {} - {}".format(addr, name),width="400",height="3", font=("Times",12,"bold")).pack()
 
 
 def scan_devices():
@@ -169,9 +171,23 @@ def scan_devices():
     screen9=Toplevel(screen)
     screen9.title("Scan for nearby Bluetooth devices")
     screen9.geometry("400x500")
+    
     Label(screen9,text="Nearby Bluetooth devices",font=("Times",16)).pack()
     Label(screen9,text="").pack()
-    Button(screen9,text="Scan Devices", height=1, width= 30, bg="#0077b6",font=("Times",13,"bold"), command=button_clicked1).pack()
+    scan=Label(screen9,text="Scanning",width="400",height="3", font=("Times",13,"bold"))
+    scan.pack()
+    Label(screen9,text="").pack()
+    
+    nearby_devices = bluetooth.discover_devices(lookup_names=True)
+    
+     #print("Found {} devices.".format(len(nearby_devices)))
+    Label(screen9,text="Found {} devices.".format(len(nearby_devices)),width="400",height="3", font=("Times",11,"bold")).pack()
+
+    for addr, name in nearby_devices:
+         #print("  {} - {}".format(addr, name))
+        Label(screen9,text="  {} - {}".format(addr, name),width="400",height="3", font=("Times",12,"bold")).pack()
+    
+#    Button(screen9,text="Scan Devices", height=1, width= 30, bg="#0077b6",font=("Times",13,"bold"), command=button_clicked1).pack()
   
     Label(screen9,text="").pack()
     Button(screen9,text="Exit", height=1, width= 30, bg="#CD5C5C",font=("Times",13,"bold"),command=delete_s9).pack(side=BOTTOM)
@@ -187,12 +203,12 @@ def session():
     screen8= Toplevel(screen)
 
     screen8.title("Dashboard")
-    screen8.geometry("400x400")
+    screen8.geometry("410x400")
     Label(screen8, text="Welcome to the Dashboard",font=("Times",16)).pack()
 
     Button(screen8,text="Sign out",bg="#ffcccb",command=delete_s8).place(x=340,y=10)
 
-    conn= sqlite3.connect("software.db")
+    conn= sqlite3.connect(resource_path("software.db"))
     c1=conn.cursor()
     c1.execute("SELECT name,gender FROM person WHERE username='"+username1+"'")
     r1=c1.fetchall()
@@ -361,3 +377,8 @@ def main_screen():
     screen.mainloop()
 
 main_screen()
+
+
+#registration page- check if user already exists
+#login- if user changes password
+#if user wants to save scanned devices
