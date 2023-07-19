@@ -5,6 +5,8 @@ import tkinter.font as font
 from PIL import Image, ImageTk
 import sqlite3
 from tkinter import messagebox
+import serial
+import bluetooth
 import sys
 import os
 
