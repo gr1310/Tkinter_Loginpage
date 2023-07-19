@@ -1,12 +1,14 @@
+#-------------------------------------------------------IMPORT LIBRARIES-------------------------------------------------------------------
+
 from tkinter import *
 import tkinter.font as font
 from PIL import Image, ImageTk
 import sqlite3
 from tkinter import messagebox
-import bluetooth
 import sys
 import os
 
+#for converting to windows software
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
@@ -18,7 +20,9 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-#Registration
+#---------------------------------------------------REGISTRATION SECTION--------------------------------------------------------------------
+
+#saves the registered values into the database
 def register_user():
     name_info=name.get()
     age_info=age.get()
@@ -28,10 +32,16 @@ def register_user():
     username_info=username.get()
     password_info= password.get()
 
+    #software.db contains registered info
     conn= sqlite3.connect(resource_path("software.db"))
     c=conn.cursor()
     c.execute("INSERT INTO person VALUES('"+name_info+"',"+age_info+",'"+conn_type_of_devices_info+"','"+conn_type_of_devices_info_1+"','"+gender_info+"','"+username_info+"','"+password_info+"')")
     messagebox.showinfo("Information","Your record is saved!")
+    conn.commit()
+    conn.close()
+    conn= sqlite3.connect(resource_path("user_info.db"))
+    c=conn.cursor()
+    c.execute("INSERT INTO Curr_session(name) VALUES('"+name_info+"')")
     conn.commit()
     conn.close()
 
@@ -47,9 +57,11 @@ def register_user():
     Label(screen1,text="Registeration is Successful", fg="green", font=("Calibri",11)).pack()
 
 
+#these functions delete the screen
 def delete_s1():
     screen1.destroy()
 
+#for the registration page
 def register():
     global screen1
     screen1= Toplevel(screen)
@@ -138,7 +150,9 @@ def register():
     Button(screen1,text="Close window",bg="#ffcccb",height=2, width= 20, command=delete_s1).pack()
 
 
-#Login
+#-----------------------------------------------------------DASHBOARD-----------------------------------------------------------------------
+
+#these functions delete the screens
 def delete_s4():
     screen4.destroy()
 def delete_s5():
@@ -148,53 +162,67 @@ def delete_s8():
 def delete_s9():
     screen9.destroy()
 
-#def button_clicked1():
-    #print("success") 
-#    screen9.pack_forget()
-  #  Label(screen9,text="hi").pack()
-     #print("Scanning") 
- #   scan=Label(screen9,text="Scanning",width="400",height="3", font=("Times",13,"bold"))
- #   scan.pack()
+'''
+#not fully complete
+#purpose- saving the bluetooth info to new database
+
+def save_info():
+    conn= sqlite3.connect(resource_path("user_info.db"))
+    c=conn.cursor()
+    # c.execute("INSERT INTO Curr_session(bluetooth_name, bluetooth_address) VALUES('"+addr+"','"+name+"')")
+
+    c.execute("UPDATE Curr_session SET bluetooth_name='"+addr+"', bluetooth_address='"+name+"' WHERE name='"+username1+"'")
+    # messagebox.showinfo("Information","Your record is saved!")
+    conn.commit()
+    conn.close()
+    conn= sqlite3.connect(resource_path("user_info.db"))
+    c=conn.cursor()
+    c.execute("SELECT * FROM Curr_session")
+    r=c.fetchall()
+    for i in r:
+        print(i)
+    # messagebox.showinfo("Information","Your record is saved!")
+    conn.commit()
+    conn.close()
+'''
+
+#Scanning nearby bluetooth devices
+
+def button_clicked1():
+    # print("success") 
+    # Label(screen9,text="hi").pack()
+
+    #print("Scanning") 
+    Label(screen9,text="Scanning",width="400",height="3", font=("Times",13,"bold")).pack()
  
-#    nearby_devices = bluetooth.discover_devices(lookup_names=True)
+    nearby_devices = bluetooth.discover_devices(lookup_names=True)
     
-     #print("Found {} devices.".format(len(nearby_devices)))
-#    Label(screen9,text="Found {} devices.".format(len(nearby_devices)),width="400",height="3", font=("Times",11,"bold")).pack()
-
-#    for addr, name in nearby_devices:
-#         #print("  {} - {}".format(addr, name))
-#        Label(screen9,text="  {} - {}".format(addr, name),width="400",height="3", font=("Times",12,"bold")).pack()
-
+    #print("Found {} devices.".format(len(nearby_devices)))
+    Label(screen9,text="Found {} devices.".format(len(nearby_devices)),width="400",height="3", font=("Times",11,"bold")).pack()
+    
+    for addr, name in nearby_devices:
+        #print("  {} - {}".format(addr, name))
+        Label(screen9,text="  {} - {}".format(addr, name),width="400",height="3", font=("Times",12,"bold")).pack()
+    
+    
+#Scan devices page
 
 def scan_devices():
     global screen9
     screen9=Toplevel(screen)
-    screen9.title("Scan for nearby Bluetooth devices")
+    screen9.title("Scanning for nearby Bluetooth devices")
     screen9.geometry("400x500")
-    
     Label(screen9,text="Nearby Bluetooth devices",font=("Times",16)).pack()
     Label(screen9,text="").pack()
-    scan=Label(screen9,text="Scanning",width="400",height="3", font=("Times",13,"bold"))
-    scan.pack()
-    Label(screen9,text="").pack()
-    
-    nearby_devices = bluetooth.discover_devices(lookup_names=True)
-    
-     #print("Found {} devices.".format(len(nearby_devices)))
-    Label(screen9,text="Found {} devices.".format(len(nearby_devices)),width="400",height="3", font=("Times",11,"bold")).pack()
-
-    for addr, name in nearby_devices:
-         #print("  {} - {}".format(addr, name))
-        Label(screen9,text="  {} - {}".format(addr, name),width="400",height="3", font=("Times",12,"bold")).pack()
-    
-#    Button(screen9,text="Scan Devices", height=1, width= 30, bg="#0077b6",font=("Times",13,"bold"), command=button_clicked1).pack()
-  
+    Button(screen9,text="Scan Devices", height=1, width= 30, bg="#0077b6",font=("Times",13,"bold"), command=button_clicked1).pack()
+    # Button(screen9,text="Save", height=1, width= 30, bg="#CD5C5C",font=("Times",11,"bold"),command=save_info()).pack()
+    Label(screen9,text="hi").pack()
     Label(screen9,text="").pack()
     Button(screen9,text="Exit", height=1, width= 30, bg="#CD5C5C",font=("Times",13,"bold"),command=delete_s9).pack(side=BOTTOM)
 
 
 
-#dashboard
+#Page for Dashboard
 
 def session():
     # delete_s()
@@ -203,7 +231,7 @@ def session():
     screen8= Toplevel(screen)
 
     screen8.title("Dashboard")
-    screen8.geometry("410x400")
+    screen8.geometry("400x400")
     Label(screen8, text="Welcome to the Dashboard",font=("Times",16)).pack()
 
     Button(screen8,text="Sign out",bg="#ffcccb",command=delete_s8).place(x=340,y=10)
@@ -233,13 +261,14 @@ def session():
     Button(screen8,text="Scan Nearby Devices",width=20,height=2,bg="#d1ffea",command=scan_devices).pack()
 
 
+#-----------------------------------------------------------LOGIN SECTION-----------------------------------------------------------------
 
+#if login is successful
 def login_success():
     session()
     
-
+#if passwoord is not recognised
 def password_not_recognized():
-    # print("working...")
     global screen4
     screen4 = Toplevel(screen)
     screen4.title("Failed")
@@ -249,14 +278,13 @@ def password_not_recognized():
     Label(screen4, text="Incorrect password",bg="#ffcccb",font=("Times",13)).pack()
     Button(screen4,text="Try again",bg="#ff6863",command=delete_s4).pack()
 
+#to allow to go to registration page
 def direct_register():
     register()
     delete_s5()
     
-    
-
+#if user is not found
 def user_not_found():
-    # print("working...")
     global screen5
     screen5 = Toplevel(screen)
     screen5.title("Failed")
@@ -268,15 +296,14 @@ def user_not_found():
     Button(screen5,text="Register new user",bg="#d1ffea",command=direct_register).pack()
 
 
+#to check whether login credentials are correct or not
 def login_verify():
-    # print("working...")
     global username1
     global password1
     username1=username_verify.get()
     password1=password_verify.get()
     usernamee_entry1.delete(0,END)
     password_entry1.delete(0,END)
-
 
 
     conn= sqlite3.connect(resource_path("software.db"))
@@ -289,12 +316,13 @@ def login_verify():
     for i in r:
         user_list.append(i[0])
         pass_list.append(i[1])
-
+    print(user_list)
+    print(pass_list)
     for i in range(len(user_list)):
-        # print(user_list[i], pass_list[i])
         if(username1 in user_list):
             if(password1 in pass_list):
-                if(user_list.index(username1)==pass_list.index(password1)):
+                idx=user_list.index(username1)
+                if(pass_list[idx]==password1):
                     # print("YES")
                     login_success()
                     break
@@ -318,6 +346,7 @@ def login_verify():
 def delete_s2():
     screen2.destroy()
 
+#The login page
 def login():
     print("Login session started")
     global screen2
@@ -347,6 +376,7 @@ def login():
     Button(screen2,text="Close window",bg="#ffcccb",height=2, width= 20, command=delete_s2).pack()
 
 
+#------------------------------------------------------------MAIN SCREEN-------------------------------------------------------------------------
 
 def main_screen():
     
@@ -356,9 +386,15 @@ def main_screen():
     screen.minsize(400,400)
     screen.maxsize(400,400)
 
+    #QUERIES to create databases(implemented for only once)
     # conn= sqlite3.connect("software.db")
     # c=conn.cursor()
     # c.execute("CREATE TABLE person(name TEXT, age INT, conn_type TEXT, conn_type_other TEXT, gender TEXT, username TEXT, password TEXT)")
+    # conn.commit()
+    # conn.close()
+    # conn= sqlite3.connect("user_info.db")
+    # c=conn.cursor()
+    # c.execute("CREATE TABLE Curr_session(name TEXT, bluetooth_name TEXT, bluetooth_address TEXT)")
     # conn.commit()
     # conn.close()
 
@@ -377,8 +413,3 @@ def main_screen():
     screen.mainloop()
 
 main_screen()
-
-
-#registration page- check if user already exists
-#login- if user changes password
-#if user wants to save scanned devices
